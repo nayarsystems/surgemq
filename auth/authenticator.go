@@ -60,5 +60,6 @@ func NewManager(providerName string) (*Manager, error) {
 }
 
 func (this *Manager) Authenticate(id string, cred interface{}) error {
+	fmt.Println("Authenticate. User:", id, "Password:", cred, "Manager:", this)
 	return this.p.Authenticate(id, cred)
 }

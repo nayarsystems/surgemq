@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strings"
 
 	"github.com/surge/glog"
 	"github.com/surgemq/message"
@@ -271,6 +272,9 @@ func (this *service) processAcked(ackq *sessions.Ackqueue) {
 // If QoS == 1, we should send back PUBACK, then take the next step
 // If QoS == 2, we need to put it in the ack queue, send back PUBREC
 func (this *service) processPublish(msg *message.PublishMessage) error {
+	fmt.Println("service/publish: Publishing ", msg)
+	this.NexusConn.TopicPublish(strings.Replace(string(msg.Topic()), "/", ".", -1), string(msg.Payload()))
+
 	switch msg.QoS() {
 	case message.QosExactlyOnce:
 		this.sess.Pub2in.Wait(msg, nil)
@@ -300,6 +304,11 @@ func (this *service) processPublish(msg *message.PublishMessage) error {
 
 // For SUBSCRIBE message, we should add subscriber, then send back SUBACK
 func (this *service) processSubscribe(msg *message.SubscribeMessage) error {
+	fmt.Println("service/subscribe: Subscribing ", msg)
+	for _, topic := range msg.Topics() {
+		this.NexusConn.TopicSubscribe(this.pipe, strings.Replace(string(topic), "/", ".", -1))
+	}
+
 	resp := message.NewSubackMessage()
 	resp.SetPacketId(msg.PacketId())
 
@@ -346,6 +355,7 @@ func (this *service) processSubscribe(msg *message.SubscribeMessage) error {
 
 // For UNSUBSCRIBE message, we should remove the subscriber, and send back UNSUBACK
 func (this *service) processUnsubscribe(msg *message.UnsubscribeMessage) error {
+	fmt.Println("service/unsubscribe: Unsubscribing:", msg)
 	topics := msg.Topics()
 
 	for _, t := range topics {

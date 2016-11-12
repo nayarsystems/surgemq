@@ -20,10 +20,13 @@ import (
 	"io"
 	"net"
 	"net/url"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
+	"github.com/jaracil/ei"
+	"github.com/nayarsystems/nxgo"
 	"github.com/surge/glog"
 	"github.com/surgemq/message"
 	"github.com/surgemq/surgemq/auth"
@@ -297,6 +300,29 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 		return nil, err
 	}
 
+	nexusConn, err := nxgo.Dial("tcp://localhost:1717", nil)
+	if err != nil {
+		resp.SetReturnCode(message.ErrBadUsernameOrPassword)
+		resp.SetSessionPresent(false)
+		writeMessage(conn, resp)
+		return nil, err
+	}
+	_, err = nexusConn.Login(string(req.Username()), string(req.Password()))
+	if err != nil {
+		resp.SetReturnCode(message.ErrBadUsernameOrPassword)
+		resp.SetSessionPresent(false)
+		writeMessage(conn, resp)
+		return nil, err
+	}
+
+	pipe, err := nexusConn.PipeCreate()
+	if err != nil {
+		resp.SetReturnCode(message.ErrBadUsernameOrPassword)
+		resp.SetSessionPresent(false)
+		writeMessage(conn, resp)
+		return nil, err
+	}
+
 	if req.KeepAlive() == 0 {
 		req.SetKeepAlive(minKeepAlive)
 	}
@@ -313,7 +339,39 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 		conn:      conn,
 		sessMgr:   this.sessMgr,
 		topicsMgr: this.topicsMgr,
+
+		NexusConn: nexusConn,
+		pipe:      pipe,
 	}
+
+	go func() {
+		for {
+			fmt.Printf("PIPEREAD SERVICE address: %p\n", svc)
+			if svc.out != nil {
+				fmt.Println("PIPEREAD SERVICE this.out: ", len(svc.out.buf))
+			}
+			msg, err := pipe.Read(1, 1*time.Hour)
+			if err != nil {
+				return
+			}
+			fmt.Printf("Pipe msg contents: %#v\n", msg.Msgs[0].Msg)
+			m := message.NewPublishMessage()
+			m.SetQoS(0)
+			m.SetPacketId(1)
+			topic := ei.N(msg.Msgs[0].Msg).M("topic").StringZ()
+			m.SetTopic([]byte(strings.Replace(topic, ".", "/", -1)))
+			payload := ei.N(msg.Msgs[0].Msg).M("msg")
+			if payload.StringZ() != "" {
+				m.SetPayload([]byte(payload.StringZ()))
+			} else {
+				m.SetPayload([]byte(payload.S(0).StringZ()))
+			}
+			err = svc.publish(m, nil)
+			if err != nil {
+				fmt.Println("Error publish from pipe:", err)
+			}
+		}
+	}()
 
 	err = this.getSession(svc, req, resp)
 	if err != nil {
