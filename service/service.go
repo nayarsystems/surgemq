@@ -21,10 +21,10 @@ import (
 	"sync/atomic"
 
 	"github.com/nayarsystems/nxgo/nxcore"
-	"github.com/surge/glog"
-	"github.com/surgemq/message"
 	"github.com/nayarsystems/surgemq/sessions"
 	"github.com/nayarsystems/surgemq/topics"
+	"github.com/surge/glog"
+	"github.com/surgemq/message"
 )
 
 type (
@@ -141,8 +141,6 @@ func (this *service) start() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("START: %p\n", this)
-	fmt.Println("this.out: ", len(this.out.buf))
 
 	// If this is a server
 	if !this.client {
@@ -262,10 +260,6 @@ func (this *service) stop() {
 }
 
 func (this *service) publish(msg *message.PublishMessage, onComplete OnCompleteFunc) error {
-	fmt.Printf("publish address: %p\n", this)
-	if this.out != nil {
-		fmt.Println("publish this.out: ", len(this.out.buf))
-	}
 	_, err := this.writeMessage(msg)
 	if err != nil {
 		return fmt.Errorf("(%s) Error sending %s message: %v", this.cid(), msg.Name(), err)

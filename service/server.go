@@ -114,6 +114,8 @@ type Server struct {
 
 	subs []interface{}
 	qoss []byte
+
+	NexusServer string
 }
 
 // ListenAndServe listents to connections on the URI requested, and handles any
@@ -303,7 +305,7 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 		return nil, err
 	}
 
-	nexusConn, err := nxgo.Dial("tcp://localhost:1717", nil)
+	nexusConn, err := nxgo.Dial(this.NexusServer, nil)
 	if err != nil {
 		resp.SetReturnCode(message.ErrBadUsernameOrPassword)
 		resp.SetSessionPresent(false)
@@ -349,10 +351,6 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 
 	go func() {
 		for {
-			fmt.Printf("PIPEREAD SERVICE address: %p\n", svc)
-			if svc.out != nil {
-				fmt.Println("PIPEREAD SERVICE this.out: ", len(svc.out.buf))
-			}
 			msg, err := pipe.Read(1, 1*time.Hour)
 			if err != nil {
 				return

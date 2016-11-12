@@ -71,7 +71,7 @@ func NewManager(providerName string) (*Manager, error) {
 }
 
 func (this *Manager) New(id string) (*Session, error) {
-	fmt.Println("New session. ID:", id)
+	fmt.Println("ID:", id)
 	if id == "" {
 		id = this.sessionId()
 	}
