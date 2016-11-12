@@ -254,8 +254,6 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 		}
 	}()
 
-	fmt.Println("Incoming connection")
-
 	err = this.checkConfiguration()
 	if err != nil {
 		return nil, err
@@ -266,7 +264,7 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 		return nil, ErrInvalidConnectionType
 	}
 
-	fmt.Println("From: ", conn.RemoteAddr())
+	fmt.Println("Incomming connection from: ", conn.RemoteAddr())
 
 	// To establish a connection, we must
 	// 1. Read and decode the message.ConnectMessage from the wire
@@ -289,10 +287,12 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 	if err != nil {
 		if cerr, ok := err.(message.ConnackCode); ok {
 			//glog.Debugf("request   message: %s\nresponse message: %s\nerror           : %v", mreq, resp, err)
+			fmt.Printf("Err ConnAck code: message: %s\nresponse message: %s\nerror: %v\n", mreq, resp, err)
 			resp.SetReturnCode(cerr)
 			resp.SetSessionPresent(false)
 			writeMessage(conn, resp)
 		}
+		fmt.Println("ConnectMessage error: ", err.Error())
 		return nil, err
 	}
 
