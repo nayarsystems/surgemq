@@ -29,9 +29,9 @@ import (
 	"github.com/nayarsystems/nxgo"
 	"github.com/surge/glog"
 	"github.com/surgemq/message"
-	"github.com/surgemq/surgemq/auth"
-	"github.com/surgemq/surgemq/sessions"
-	"github.com/surgemq/surgemq/topics"
+	"github.com/nayarsystems/surgemq/auth"
+	"github.com/nayarsystems/surgemq/sessions"
+	"github.com/nayarsystems/surgemq/topics"
 )
 
 var (

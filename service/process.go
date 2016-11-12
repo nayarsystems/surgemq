@@ -23,7 +23,7 @@ import (
 
 	"github.com/surge/glog"
 	"github.com/surgemq/message"
-	"github.com/surgemq/surgemq/sessions"
+	"github.com/nayarsystems/surgemq/sessions"
 )
 
 var (

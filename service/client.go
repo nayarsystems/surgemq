@@ -22,8 +22,8 @@ import (
 	"time"
 
 	"github.com/surgemq/message"
-	"github.com/surgemq/surgemq/sessions"
-	"github.com/surgemq/surgemq/topics"
+	"github.com/nayarsystems/surgemq/sessions"
+	"github.com/nayarsystems/surgemq/topics"
 )
 
 const (
