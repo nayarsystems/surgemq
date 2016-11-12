@@ -287,7 +287,6 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 	if err != nil {
 		if cerr, ok := err.(message.ConnackCode); ok {
 			//glog.Debugf("request   message: %s\nresponse message: %s\nerror           : %v", mreq, resp, err)
-			fmt.Printf("Err ConnAck code: message: %s\nresponse message: %s\nerror: %v\n", mreq, resp, err)
 			resp.SetReturnCode(cerr)
 			resp.SetSessionPresent(false)
 			writeMessage(conn, resp)
