@@ -27,11 +27,11 @@ import (
 
 	"github.com/jaracil/ei"
 	"github.com/nayarsystems/nxgo"
-	"github.com/surge/glog"
-	"github.com/surgemq/message"
 	"github.com/nayarsystems/surgemq/auth"
 	"github.com/nayarsystems/surgemq/sessions"
 	"github.com/nayarsystems/surgemq/topics"
+	"github.com/surge/glog"
+	"github.com/surgemq/message"
 )
 
 var (
@@ -254,6 +254,8 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 		}
 	}()
 
+	fmt.Println("Incoming connection")
+
 	err = this.checkConfiguration()
 	if err != nil {
 		return nil, err
@@ -263,6 +265,8 @@ func (this *Server) handleConnection(c io.Closer) (svc *service, err error) {
 	if !ok {
 		return nil, ErrInvalidConnectionType
 	}
+
+	fmt.Println("From: ", conn.RemoteAddr())
 
 	// To establish a connection, we must
 	// 1. Read and decode the message.ConnectMessage from the wire
